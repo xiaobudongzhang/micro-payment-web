@@ -2,10 +2,8 @@ package handler
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/micro/go-micro/v2/client"
 	"github.com/micro/go-micro/v2/util/log"
@@ -18,36 +16,6 @@ var (
 	authClient    auth.Service
 )
 
-func PaymentCall(w http.ResponseWriter, r *http.Request) {
-	// decode the incoming request as json
-	var request map[string]interface{}
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	// call the backend service
-	paymentClient := payment.NewPaymentService("mu.micro.book.service.payment", client.DefaultClient)
-	rsp, err := paymentClient.Call(context.TODO(), &payment.Request{
-		Name: request["name"].(string),
-	})
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	// we want to augment the response
-	response := map[string]interface{}{
-		"msg": rsp.Msg,
-		"ref": time.Now().UnixNano(),
-	}
-
-	// encode and write the response as json
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-}
 
 //Error 错误结构体
 type Error struct {
@@ -57,7 +25,7 @@ type Error struct {
 
 func Init() {
 	serviceClient = payS.NewPaymentService("mu.micro.book.service.payment", client.DefaultClient)
-	authClient = auth.NewPaymentService("mu.micro.book.service.auth", client.DefaultClient)
+	authClient = auth.NewService("mu.micro.book.service.auth", client.DefaultClient)
 }
 
 func PayOrder(w http.ResponseWriter, r *http.Request) {
@@ -70,7 +38,7 @@ func PayOrder(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	orderId, _ := strconv.ParseInt(r.Form.Get("orderId"), 10, 10)
 	_, err := serviceClient.PayOrder(context.TODO(), &payS.Request{
-		orderId: orderId
+		orderId: orderId,
 	})
 
 	

@@ -4,7 +4,7 @@ import (
         log "github.com/micro/go-micro/v2/logger"
 	      "net/http"
         "github.com/micro/go-micro/v2/web"
-        "micro-payment-web/handler"
+        "github.com/xiaobudongzhang/micro-payment-web/handler"
 )
 
 func main() {
